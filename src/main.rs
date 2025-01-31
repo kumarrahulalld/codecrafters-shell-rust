@@ -23,6 +23,7 @@ fn main() {
         match content[1] {
             "echo" => println!("echo is a shell builtin"),
             "type" => println!("type is a shell builtin"),
+            "exit" => println!("type is a shell builtin"),
             _ => println!("{}: command not found", content[1]),
         }
     }

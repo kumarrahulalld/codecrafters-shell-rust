@@ -18,6 +18,8 @@ fn main() {
         let content  = input.trim().split(" ").collect::<Vec<&str>>();
         println!("{}", content[1..content.len()].join(" "));
     }
-    println!("{}: command not found", input.trim());
+    else {
+        println!("{}: command not found", input.trim());
+    }
     }
 }

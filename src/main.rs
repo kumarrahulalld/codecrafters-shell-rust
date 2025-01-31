@@ -17,7 +17,7 @@ fn main() {
     }
     else if input.starts_with("echo") {
         let content  = input.trim().split(" ").collect::<Vec<&str>>();
-        println!("{}", content[1]);
+        println!("{}", content[1..content.len()].join(" "));
     }
     println!("{}: command not found", input.trim());
     }

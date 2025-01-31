@@ -3,8 +3,7 @@ use std::io::{self, Write};
 
 fn main() {
     // Uncomment this block to pass the first stage
-    while true {
-        
+    loop {
     print!("$ ");
     io::stdout().flush().unwrap();
 

@@ -18,6 +18,14 @@ fn main() {
         let content  = input.trim().split(" ").collect::<Vec<&str>>();
         println!("{}", content[1..content.len()].join(" "));
     }
+    else if input.starts_with("type") {
+        let content  = input.trim().split(" ").collect::<Vec<&str>>();
+        match content[1] {
+            "echo" => println!("echo is a shell builtin"),
+            "type" => println!("type is a shell builtin"),
+            _ => println!("{}: command not found", content[1]),
+        }
+    }
     else {
         println!("{}: command not found", input.trim());
     }

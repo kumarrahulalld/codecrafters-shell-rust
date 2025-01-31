@@ -20,6 +20,7 @@ fn main() {
     }
     else if input.starts_with("type") {
         let content  = input.trim().split(" ").collect::<Vec<&str>>();
+        println!("command - type {}", content[1]);
         match content[1] {
             "echo" => println!("echo is a shell builtin"),
             "type" => println!("type is a shell builtin"),

@@ -3,6 +3,8 @@ use std::io::{self, Write};
 
 fn main() {
     // Uncomment this block to pass the first stage
+    let args: Vec<String> = std::env::args().collect();
+    println!("args {:?}", args);
     let mut directories:Vec<String> = Vec::new();
     let builin_commands: Vec<&str> = vec!["echo", "type", "exit"];
     loop {
@@ -16,9 +18,6 @@ fn main() {
     println!("input {}", input.trim());
     if input.trim() == "exit 0" {
         break;
-    }
-    else if input.starts_with("PATH=") {
-        directories = input.trim().split("=").collect::<Vec<&str>>()[1].split(":").map(|s| s.to_string()).collect::<Vec<String>>();
     }
     else if input.starts_with("echo") {
         let content  = input.trim().split(" ").collect::<Vec<&str>>();

@@ -1,11 +1,10 @@
+use std::env;
 #[allow(unused_imports)]
 use std::io::{self, Write};
 
 fn main() {
     // Uncomment this block to pass the first stage
-    let args: Vec<String> = std::env::args().collect();
-    println!("args {:?}", args);
-    let mut directories:Vec<String> = Vec::new();
+    let directories:Vec<String> = env::var("PATH").unwrap().split(":").map(|x| x.to_string()).collect();
     let builin_commands: Vec<&str> = vec!["echo", "type", "exit"];
     loop {
     print!("$ ");

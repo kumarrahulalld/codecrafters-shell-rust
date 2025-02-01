@@ -39,7 +39,7 @@ fn main() {
                 }
             }
             if !found {
-                println!("{}: command not found", content[1]);
+                println!("{}: not found", content[1]);
             }
         }
     }

@@ -3,8 +3,8 @@ use std::io::{self, Write};
 
 fn main() {
     // Uncomment this block to pass the first stage
-    let mut directories:Vec<&str> = Vec::new();
-    let builin_commands = vec!["echo", "type", "exit"];
+    let mut directories:Vec<String> = Vec::new();
+    let builin_commands: Vec<&str> = vec!["echo", "type", "exit"];
     loop {
     print!("$ ");
     io::stdout().flush().unwrap();
@@ -17,8 +17,7 @@ fn main() {
         break;
     }
     else if input.starts_with("PATH=") {
-        directories = input.trim().split("=").collect::<Vec<&str>>()[1].split(":").collect::<Vec<&str>>();
-
+        directories = input.trim().split("=").collect::<Vec<&str>>()[1].split(":").map(|s| s.to_string()).collect::<Vec<String>>();
     }
     else if input.starts_with("echo") {
         let content  = input.trim().split(" ").collect::<Vec<&str>>();

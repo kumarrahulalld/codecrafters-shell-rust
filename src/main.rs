@@ -5,7 +5,7 @@ use std::process::Command;
 
 fn main() {
     let directories = get_system_paths();
-    let builtin_commands = vec!["echo", "type", "exit"];
+    let builtin_commands = vec!["echo", "type", "exit","pwd"];
     
     loop {
         print!("$ ");
@@ -43,6 +43,7 @@ fn process_command(input: &str, builtin_commands: &[&str], directories: &[String
     {
         match args[0] {
             "echo" => handle_echo(&args),
+            "pwd" => println!("{}",env::current_dir().unwrap().display()),
             "type" => handle_type(&args, builtin_commands, directories),
             _ => println!("{}: command not found", input.trim()),
         }

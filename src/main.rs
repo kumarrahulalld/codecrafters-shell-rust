@@ -1,6 +1,7 @@
 use std::env;
 use std::io::{self, Write};
 use std::path::Path;
+use std::process::Command;
 
 fn main() {
     let directories = get_system_paths();
@@ -38,11 +39,20 @@ fn process_command(input: &str, builtin_commands: &[&str], directories: &[String
     if args.is_empty() {
         return;
     }
-    
-    match args[0] {
-        "echo" => handle_echo(&args),
-        "type" => handle_type(&args, builtin_commands, directories),
-        _ => println!("{}: command not found", input.trim()),
+    if builtin_commands.contains(&args[0])
+    {
+        match args[0] {
+            "echo" => handle_echo(&args),
+            "type" => handle_type(&args, builtin_commands, directories),
+            _ => println!("{}: command not found", input.trim()),
+        }
+    }
+    else if directories.len() > 0{
+        let path = find_command_in_path(args[0], directories).unwrap();
+        Command::new(path).args(&args[1..args.len()]).status().expect("failed to execute process");
+    }
+    else {
+        println!("{}: command not found", input.trim())
     }
 }
 

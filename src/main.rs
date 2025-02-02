@@ -47,7 +47,7 @@ fn process_command(input: &str, builtin_commands: &[&str], directories: &[String
             _ => println!("{}: command not found", input.trim()),
         }
     }
-    else if let Some(path) = find_command_in_path(args[0], directories) {
+    else if find_command_in_path(args[0], directories).is_some() {
         Command::new(args[0]).args(&args[1..]).status().expect("failed to execute process");
     }
     else {

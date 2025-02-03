@@ -65,7 +65,12 @@ fn handle_echo(args: &[&str]) {
 
 fn handle_cd(path:&str)
 {
-    if Path::new(path).exists()
+    if path.eq("~")
+    {
+        let home_dir = env::var("HOME").unwrap();
+        env::set_current_dir(home_dir).unwrap();
+    }
+    else if Path::new(path).exists()
     {
         env::set_current_dir(path).unwrap();
     }

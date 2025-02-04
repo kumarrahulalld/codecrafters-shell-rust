@@ -35,12 +35,15 @@ fn get_user_input() -> String {
 }
 
 fn process_command(input: &str, builtin_commands: &[&str], directories: &[String]) {
-    let args: Vec<&str> = input.trim().split_whitespace().collect();
+    let mut args: Vec<&str> = input.trim().split_whitespace().collect();
     if args.is_empty() {
         return;
     }
     if builtin_commands.contains(&args[0])
     {
+        for i in 1..args.len() {
+            args[i] = args[i].trim_matches('\'');
+        }    
         match args[0] {
             "echo" => handle_echo(&args),
             "pwd" => println!("{}",env::current_dir().unwrap().display()),

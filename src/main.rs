@@ -2,7 +2,7 @@ use std::env;
 use std::io::{self, Write};
 use std::path::Path;
 use std::process::Command;
-//updated comment
+//updated
 fn main() {
     let directories = get_system_paths();
     let builtin_commands = vec!["echo", "type", "exit","pwd","cd"];

@@ -43,7 +43,7 @@ fn process_command(input: &str, builtin_commands: &[&str], directories: &[String
     {
         let cleaned_args_storage: Vec<String> = args
         .iter()
-        .map(|&arg| arg.trim_matches('\'').to_string())
+        .map(|&arg| arg.replace("'", ""))
         .collect();
     // Reassign args to references from cleaned storage
         args = cleaned_args_storage.iter().map(|s| s.as_str()).collect();

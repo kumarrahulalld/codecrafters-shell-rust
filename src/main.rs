@@ -48,6 +48,9 @@ fn process_input(input: &str) -> Vec<String> {
                     in_single_quote = !in_single_quote;
                     continue; // Do not add quotes to the result
                 }
+                else {
+                    curr.push(c);
+                }
             }
             '"' => {
                 if !in_single_quote {

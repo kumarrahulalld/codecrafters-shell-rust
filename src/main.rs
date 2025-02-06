@@ -1,4 +1,4 @@
-use std::env;
+use std::{env, result};
 use std::io::{self, Write};
 use std::path::Path;
 use std::process::Command;
@@ -35,19 +35,13 @@ fn get_user_input() -> String {
 }
 
 fn process_command(input: &str, builtin_commands: &[&str], directories: &[String]) {
-    let mut args: Vec<&str> = input.trim().split_whitespace().collect();
+    let cleaned_input = input.replace("'", "");
+    let args: Vec<&str> = cleaned_input.split_whitespace().collect();
     if args.is_empty() {
         return;
     }
-    let joined_args = args[1..].join(" ");
-    let command = args[0];
-    args = Vec::new();
-    args.push(command);
-    args.push(&joined_args);
     if builtin_commands.contains(&args[0])
     {
-        let replaced_arg = args[1].replace("'", "").to_string();
-        args[1] = &replaced_arg;
         match args[0] {
             "echo" => handle_echo(&args),
             "pwd" => println!("{}",env::current_dir().unwrap().display()),

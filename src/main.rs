@@ -39,7 +39,10 @@ fn process_input(input: &str) -> Vec<String> {
     let mut curr = String::new();
     let mut quote_count = 0;
     for c in input.chars() {
-        if c == '\'' {
+        if c == '\n' {
+            continue;
+        }
+        else if c == '\'' {
             if quote_count == 0 {
                 quote_count = 1;
             }

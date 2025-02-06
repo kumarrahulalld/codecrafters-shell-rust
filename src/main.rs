@@ -40,7 +40,10 @@ fn process_command(input: &str, builtin_commands: &[&str], directories: &[String
         return;
     }
     let joined_args = args[1..].join(" ");
-    args[1] = &joined_args;
+    let command = args[0];
+    args = Vec::new();
+    args.push(command);
+    args.push(&joined_args);
     if builtin_commands.contains(&args[0])
     {
         let replaced_arg = args[1].replace("'", "").to_string();

@@ -39,14 +39,12 @@ fn process_command(input: &str, builtin_commands: &[&str], directories: &[String
     if args.is_empty() {
         return;
     }
+    let joined_args = args[1..].join(" ");
+    args[1] = &joined_args;
     if builtin_commands.contains(&args[0])
     {
-        let cleaned_args_storage: Vec<String> = args
-        .iter()
-        .map(|&arg| arg.replace("'", "").join(" "))
-        .collect();
-    // Reassign args to references from cleaned storage
-        args = cleaned_args_storage.iter().map(|s| s.as_str()).collect();
+        let replaced_arg = args[1].replace("'", "").to_string();
+        args[1] = &replaced_arg;
         match args[0] {
             "echo" => handle_echo(&args),
             "pwd" => println!("{}",env::current_dir().unwrap().display()),

@@ -42,7 +42,7 @@ fn process_input(input: &str) -> Vec<String> {
 
     for c in input.chars() {
         match c {
-            '\n' => continue,  // Ignore newlines
+            '\n' => continue,  
             '\'' => {
                 if !in_double_quote {
                     in_single_quote = !in_single_quote;

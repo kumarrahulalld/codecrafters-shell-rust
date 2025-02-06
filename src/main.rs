@@ -96,7 +96,7 @@ fn process_command(input: &str, builtin_commands: &[&str], directories: &[String
 }
 
 fn handle_echo(args: &[&str]) {
-    println!("args: {:?}", args);
+    //println!("args: {:?}", args);
     if args.len() > 1 {
         println!("{}", args[1..].join(" "));
     }

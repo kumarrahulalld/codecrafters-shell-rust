@@ -35,41 +35,45 @@ fn get_user_input() -> String {
 }
 
 fn process_input(input: &str) -> Vec<String> {
-    let mut result:Vec<String> = Vec::new();
+    let mut result = Vec::new();
     let mut curr = String::new();
-    let mut quote_count = 0;
+    let mut in_single_quote = false;
+    let mut in_double_quote = false;
+
     for c in input.chars() {
-        if c == '\n' {
-            continue;
-        }
-        else if c == '\'' {
-            if quote_count == 0 {
-                quote_count = 1;
+        match c {
+            '\n' => continue,  // Ignore newlines
+            '\'' => {
+                if !in_double_quote {
+                    in_single_quote = !in_single_quote;
+                    continue; // Do not add quotes to the result
+                }
             }
-            else {
-                quote_count = 0;
-                result.push(curr.clone());
-                curr.clear();
+            '"' => {
+                if !in_single_quote {
+                    in_double_quote = !in_double_quote;
+                    continue; // Do not add quotes to the result
+                }
             }
-        }
-        else if c == ' ' {
-            if quote_count == 1 {
-                curr = curr + &c.to_string();
+            ' ' => {
+                if in_single_quote || in_double_quote {
+                    curr.push(c);
+                } else if !curr.is_empty() {
+                    result.push(curr.clone());
+                    curr.clear();
+                }
             }
-            else {
-                result .push(curr.clone());
-                curr.clear();
-            }
-        }
-        else {
-            curr = curr + &c.to_string();
+            _ => curr.push(c),
         }
     }
-    if curr.len() > 0 {
-        result.push(curr.clone());
+
+    if !curr.is_empty() {
+        result.push(curr);
     }
-    return result;
+
+    result
 }
+
 
 fn process_command(input: &str, builtin_commands: &[&str], directories: &[String]) {
     let processed_input = process_input(input);

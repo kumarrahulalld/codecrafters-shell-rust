@@ -34,9 +34,43 @@ fn get_user_input() -> String {
     input
 }
 
+fn process_input(input: &str) -> Vec<String> {
+    let mut result:Vec<String> = Vec::new();
+    let mut curr = String::new();
+    let mut quote_count = 0;
+    for c in input.chars() {
+        if c == '\'' {
+            if quote_count == 0 {
+                quote_count = 1;
+            }
+            else {
+                quote_count = 0;
+                result.push(curr.clone());
+                curr.clear();
+            }
+        }
+        else if c == ' ' {
+            if quote_count == 1 {
+                curr = curr + &c.to_string();
+            }
+            else {
+                result .push(curr.clone());
+                curr.clear();
+            }
+        }
+        else {
+            curr = curr + &c.to_string();
+        }
+    }
+    if curr.len() > 0 {
+        result.push(curr.clone());
+    }
+    return result;
+}
+
 fn process_command(input: &str, builtin_commands: &[&str], directories: &[String]) {
-    let cleaned_input = input.replace("'", "");
-    let args: Vec<&str> = cleaned_input.split_whitespace().collect();
+    let processed_input = process_input(input);
+    let args: Vec<&str> = processed_input.iter().map(|x| x.as_str()).collect();
     if args.is_empty() {
         return;
     }

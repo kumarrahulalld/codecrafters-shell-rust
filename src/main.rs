@@ -94,7 +94,7 @@ fn process_command(input: &str, builtin_commands: &[&str], directories: &[String
 
 fn handle_echo(args: &[&str]) {
     if args.len() > 1 {
-        println!("{}", args[1]);
+        println!("{}", args[1..].join(" "));
     }
 }
 

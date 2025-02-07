@@ -82,10 +82,13 @@ fn process_command(input: &str, builtin_commands: &[&str], directories: &[String
             "type" => handle_type(&args, builtin_commands, directories),
             "cd" => handle_cd(args[1]),
             "cat" => {
-                //println!("args {:?}", args);
-                let mut file = std::fs::File::open(args[1]).unwrap();
                 let mut contents = String::new();
-                file.read_to_string(&mut contents).unwrap();
+                for i in 1..args.len() {
+                    let mut content = String::new();
+                    let mut file = std::fs::File::open(args[i]).unwrap();
+                    file.read_to_string(&mut content).unwrap();
+                    contents.push_str(&content);
+                }
                 println!("{}", contents);
             },
             _ => println!("{}: command not found", input.trim()),

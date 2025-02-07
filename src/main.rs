@@ -44,32 +44,26 @@ fn process_input(input: &str) -> Vec<String> {
 
     for c in input.chars() {
         if escape_next {
-            curr.push(c);
+            curr.push(c); // Add the escaped character literally
             escape_next = false;
             continue;
         }
 
         match c {
-            '\n' => {
-                if !curr.is_empty() {
-                    result.push(curr.clone());
-                    curr.clear();
-                }
-            }
             '\\' => {
-                escape_next = true; // The next character should be treated literally
+                escape_next = true; // Mark the next character as escaped
             }
             '\'' => {
                 if !in_double_quote {
-                    in_single_quote = !in_single_quote; // Toggle single quote mode
-                    continue; // Do not add quotes to the token
+                    in_single_quote = !in_single_quote; // Toggle single-quote mode
+                    continue; // Do not add the quote itself
                 } else {
                     curr.push(c);
                 }
             }
             '"' => {
                 if !in_single_quote {
-                    in_double_quote = !in_double_quote; // Toggle double quote mode
+                    in_double_quote = !in_double_quote; // Toggle double-quote mode
                     continue;
                 } else {
                     curr.push(c);
@@ -77,9 +71,9 @@ fn process_input(input: &str) -> Vec<String> {
             }
             ' ' => {
                 if in_single_quote || in_double_quote {
-                    curr.push(c);
+                    curr.push(c); // Keep spaces inside quotes
                 } else if !curr.is_empty() {
-                    result.push(curr.clone());
+                    result.push(curr.clone()); // Finalize the current token
                     curr.clear();
                 }
             }
@@ -95,6 +89,7 @@ fn process_input(input: &str) -> Vec<String> {
 
     result
 }
+
 
 
 
@@ -131,9 +126,10 @@ fn process_command(input: &str, builtin_commands: &[&str], directories: &[String
 }
 
 fn handle_echo(args: &[&str]) {
-    //println!("args: {:?}", args);
     if args.len() > 1 {
-        println!("{}", args[1..].join(" "));
+        let mut modified_args: Vec<String> = args[1..].iter().map(|&arg| arg.replace("\n", "")).collect();
+        let modified_args_str: Vec<&str> = modified_args.iter().map(|arg| arg.as_str()).collect();
+        println!("{}", modified_args_str.join(" "));
     }
 }
 

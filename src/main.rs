@@ -50,6 +50,12 @@ fn process_input(input: &str) -> Vec<String> {
         }
 
         match c {
+            '\n' => {
+                if !curr.is_empty() {
+                    result.push(curr.clone());
+                    curr.clear();
+                }
+            }
             '\\' => {
                 escape_next = true; // The next character should be treated literally
             }

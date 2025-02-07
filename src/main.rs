@@ -37,56 +37,30 @@ fn get_user_input() -> String {
 
 fn process_input(input: &str) -> Vec<String> {
     let mut result = Vec::new();
-    let mut curr = String::new();
-    let mut in_single_quote = false;
-    let mut in_double_quote = false;
-    let mut escape_next = false; // Tracks if the next character is escaped
-
-    for c in input.chars() {
-        if escape_next {
-            curr.push(c); // Add the escaped character literally
-            escape_next = false;
-            continue;
-        }
-
-        match c {
-            '\\' => {
-                escape_next = true; // Mark the next character as escaped
+    let mut word = String::new();
+    let mut in_single_quotes = false;
+    let mut in_double_quotes = false;
+    let mut chars = input.chars().peekable();
+    while let Some(c) = chars.next() {
+        if c == '\'' && !in_double_quotes {
+            in_single_quotes = !in_single_quotes;
+        } else if c == '"' && !in_single_quotes {
+            in_double_quotes = !in_double_quotes;
+        } else if c == ' ' && !in_single_quotes && !in_double_quotes {
+            if !word.is_empty() {
+                result.push(word.clone());
+                word.clear();
             }
-            '\'' => {
-                if !in_double_quote {
-                    in_single_quote = !in_single_quote; // Toggle single-quote mode
-                    continue; // Do not add the quote itself
-                } else {
-                    curr.push(c);
-                }
-            }
-            '"' => {
-                if !in_single_quote {
-                    in_double_quote = !in_double_quote; // Toggle double-quote mode
-                    continue;
-                } else {
-                    curr.push(c);
-                }
-            }
-            ' ' => {
-                if in_single_quote || in_double_quote {
-                    curr.push(c); // Keep spaces inside quotes
-                } else if !curr.is_empty() {
-                    result.push(curr.clone()); // Finalize the current token
-                    curr.clear();
-                }
-            }
-            _ => {
-                curr.push(c);
-            }
+        } else if c == '\\' && !in_single_quotes && !in_double_quotes {
+            let c = chars.next().unwrap();
+            word.push(c);
+        } else {
+            word.push(c);
         }
     }
-
-    if !curr.is_empty() {
-        result.push(curr);
+    if !word.is_empty() {
+        result.push(word);
     }
-
     result
 }
 
@@ -108,7 +82,7 @@ fn process_command(input: &str, builtin_commands: &[&str], directories: &[String
             "type" => handle_type(&args, builtin_commands, directories),
             "cd" => handle_cd(args[1]),
             "cat" => {
-               // println!("args {:?}", args);
+                println!("args {:?}", args);
                 let mut file = std::fs::File::open(args[1]).unwrap();
                 let mut contents = String::new();
                 file.read_to_string(&mut contents).unwrap();
@@ -126,10 +100,9 @@ fn process_command(input: &str, builtin_commands: &[&str], directories: &[String
 }
 
 fn handle_echo(args: &[&str]) {
+    //println!("args: {:?}", args);
     if args.len() > 1 {
-        let mut modified_args: Vec<String> = args[1..].iter().map(|&arg| arg.replace("\n", "")).collect();
-        let modified_args_str: Vec<&str> = modified_args.iter().map(|arg| arg.as_str()).collect();
-        println!("{}", modified_args_str.join(" "));
+        println!("{}", args[1..].join(" "));
     }
 }
 

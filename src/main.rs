@@ -102,7 +102,8 @@ fn process_command(input: &str, builtin_commands: &[&str], directories: &[String
 fn handle_echo(args: &[&str]) {
     //println!("args: {:?}", args);
     if args.len() > 1 {
-        println!("{}", args[1..].join(" "));
+        let parsed_input = args[1..].iter().map(|x| x.replace("\n", "")).collect::<Vec<_>>();
+        println!("{}", parsed_input.join(" "));
     }
 }
 

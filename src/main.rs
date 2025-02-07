@@ -137,7 +137,7 @@ fn handle_type(args: &[&str], builtin_commands: &[&str], directories: &[String])
     }
     
     let command = args[1];
-    if builtin_commands.contains(&command) {
+    if builtin_commands.contains(&command) && command != "cat"{
         println!("{} is a shell builtin", command);
     } else if let Some(path) = find_command_in_path(command, directories) {
         println!("{} is {}", command, path);

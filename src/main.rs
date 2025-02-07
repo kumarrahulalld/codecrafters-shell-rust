@@ -82,6 +82,7 @@ fn process_command(input: &str, builtin_commands: &[&str], directories: &[String
             "type" => handle_type(&args, builtin_commands, directories),
             "cd" => handle_cd(args[1]),
             "cat" => {
+                println!("args: {:?}", args);
                 let mut contents = String::new();
                 for i in 1..args.len() {
                     let mut content = String::new();

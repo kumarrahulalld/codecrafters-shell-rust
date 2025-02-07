@@ -40,43 +40,45 @@ fn process_input(input: &str) -> Vec<String> {
     let mut curr = String::new();
     let mut in_single_quote = false;
     let mut in_double_quote = false;
-    let mut escape = false; // Track if the last character was a backslash
+    let mut escape_next = false; // Tracks if the next character is escaped
 
     for c in input.chars() {
-        if escape {
-            curr.push(c); // Take the next character literally
-            escape = false;
-        } else {
-            match c {
-                '\\' => {
-                    escape = true; // Set escape flag
+        if escape_next {
+            curr.push(c);
+            escape_next = false;
+            continue;
+        }
+
+        match c {
+            '\\' => {
+                escape_next = true; // The next character should be treated literally
+            }
+            '\'' => {
+                if !in_double_quote {
+                    in_single_quote = !in_single_quote; // Toggle single quote mode
+                    continue; // Do not add quotes to the token
+                } else {
+                    curr.push(c);
                 }
-                '\n' => continue,  
-                '\'' => {
-                    if !in_double_quote {
-                        in_single_quote = !in_single_quote;
-                        continue; // Do not add quotes to the result
-                    } else {
-                        curr.push(c);
-                    }
+            }
+            '"' => {
+                if !in_single_quote {
+                    in_double_quote = !in_double_quote; // Toggle double quote mode
+                    continue;
+                } else {
+                    curr.push(c);
                 }
-                '"' => {
-                    if !in_single_quote {
-                        in_double_quote = !in_double_quote;
-                        continue; // Do not add quotes to the result
-                    } else {
-                        curr.push(c);
-                    }
+            }
+            ' ' => {
+                if in_single_quote || in_double_quote {
+                    curr.push(c);
+                } else if !curr.is_empty() {
+                    result.push(curr.clone());
+                    curr.clear();
                 }
-                ' ' => {
-                    if in_single_quote || in_double_quote {
-                        curr.push(c);
-                    } else if !curr.is_empty() {
-                        result.push(curr.clone());
-                        curr.clear();
-                    }
-                }
-                _ => curr.push(c),
+            }
+            _ => {
+                curr.push(c);
             }
         }
     }
@@ -87,6 +89,7 @@ fn process_input(input: &str) -> Vec<String> {
 
     result
 }
+
 
 
 

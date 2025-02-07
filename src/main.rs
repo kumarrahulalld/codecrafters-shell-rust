@@ -42,7 +42,10 @@ fn process_input(input: &str) -> Vec<String> {
     let mut in_double_quotes = false;
     let mut chars = input.chars().peekable();
     while let Some(c) = chars.next() {
-        if c == '\'' && !in_double_quotes {
+        if c == '\n' {
+            continue;
+        }
+        else if c == '\'' && !in_double_quotes {
             in_single_quotes = !in_single_quotes;
         } else if c == '"' && !in_single_quotes {
             in_double_quotes = !in_double_quotes;

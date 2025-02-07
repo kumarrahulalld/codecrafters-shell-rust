@@ -1,5 +1,6 @@
 use std::env;
 use std::io::{self, Write};
+use std::io::prelude::*;
 use std::path::Path;
 use std::process::Command;
 //updated com

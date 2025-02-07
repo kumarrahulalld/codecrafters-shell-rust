@@ -93,7 +93,7 @@ fn process_command(input: &str, builtin_commands: &[&str], directories: &[String
                     file.read_to_string(&mut content).unwrap();
                     contents.push_str(&content);
                 }
-                println!("{}", contents);
+                println!("{}", contents.replace("\n", ""));
             },
             _ => println!("{}: command not found", input.trim()),
         }

@@ -113,6 +113,7 @@ fn process_command(input: &str, builtin_commands: &[&str], directories: &[String
             "type" => handle_type(&args, builtin_commands, directories),
             "cd" => handle_cd(args[1]),
             "cat" => {
+                println!("args1 {}",args[1]);
                 let mut file = std::fs::File::open(args[1]).unwrap();
                 let mut contents = String::new();
                 file.read_to_string(&mut contents).unwrap();

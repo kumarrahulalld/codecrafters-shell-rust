@@ -180,7 +180,7 @@ fn find_command_in_path(command: &str, directories: &[String]) -> Option<PathBuf
 
 fn execute_external_command(args: &[String], directories: &[String]) {
     if let Some(command_path) = find_command_in_path(&args[0], directories) {
-        let status = Command::new(command_path)
+        let status = Command::new(command_path.file_name().unwrap())
             .args(&args[1..])
             .status();
 

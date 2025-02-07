@@ -1,32 +1,36 @@
 use std::env;
-use std::io::{self, Write};
-use std::io::prelude::*;
-use std::path::Path;
+use std::fs::File;
+use std::io::{self, Write, Read};
+use std::path::{Path, PathBuf};
 use std::process::Command;
-//updated com
-fn main() {
-    let directories = get_system_paths();
-    let builtin_commands = vec!["echo", "type", "exit","pwd","cd","cat"];
-    
-    loop {
-        print!("$ ");
-        io::stdout().flush().unwrap();
 
+const BUILTIN_COMMANDS: [&str; 6] = ["echo", "type", "exit", "pwd", "cd", "cat"];
+
+fn main() {
+    let system_paths = get_system_paths();
+
+    loop {
+        print_prompt();
         let input = get_user_input();
         if input.trim() == "exit 0" {
             break;
         }
 
-        process_command(&input, &builtin_commands, &directories);
+        process_command(&input, &system_paths);
     }
 }
 
 fn get_system_paths() -> Vec<String> {
     env::var("PATH")
-        .unwrap()
+        .unwrap_or_else(|_| String::new())  // Return empty string if "PATH" is not set
         .split(':')
-        .map(|x| x.to_string())
+        .map(String::from)
         .collect()
+}
+
+fn print_prompt() {
+    print!("$ ");
+    io::stdout().flush().unwrap();
 }
 
 fn get_user_input() -> String {
@@ -35,123 +39,155 @@ fn get_user_input() -> String {
     input
 }
 
-fn process_input(input: &str) -> Vec<String> {
+fn process_command(input: &str, directories: &[String]) {
+    let args = parse_input(input);
+
+    if args.is_empty() {
+        return;
+    }
+
+    match args[0].as_str() {
+        "exit" => return,  // Exit the loop in main()
+        "echo" => handle_echo(&args),
+        "pwd" => handle_pwd(),
+        "cd" => handle_cd(&args),
+        "type" => handle_type(&args, directories),
+        "cat" => handle_cat(&args),
+        _ => execute_external_command(&args, directories),
+    }
+}
+
+fn parse_input(input: &str) -> Vec<String> {
     let mut result = Vec::new();
     let mut word = String::new();
     let mut in_single_quotes = false;
     let mut in_double_quotes = false;
+
     let mut chars = input.chars().peekable();
     while let Some(c) = chars.next() {
-        if c == '\n' {
-            continue;
-        }
-        else if c == '\'' && !in_double_quotes {
-            in_single_quotes = !in_single_quotes;
-        } else if c == '"' && !in_single_quotes {
-            in_double_quotes = !in_double_quotes;
-        } else if c == ' ' && !in_single_quotes && !in_double_quotes {
-            if !word.is_empty() {
-                result.push(word.clone());
-                word.clear();
+        match c {
+            '\n' => continue,
+            '\'' if !in_double_quotes => in_single_quotes = !in_single_quotes,
+            '"' if !in_single_quotes => in_double_quotes = !in_double_quotes,
+            ' ' if !in_single_quotes && !in_double_quotes => {
+                if !word.is_empty() {
+                    result.push(word.clone());
+                    word.clear();
+                }
             }
-        } else if c == '\\' && !in_single_quotes && !in_double_quotes {
-            let c = chars.next().unwrap();
-            word.push(c);
-        } else {
-            word.push(c);
+            '\\' if !in_single_quotes && !in_double_quotes => {
+                if let Some(next_char) = chars.next() {
+                    word.push(next_char);
+                }
+            }
+            _ => word.push(c),
         }
     }
+
     if !word.is_empty() {
         result.push(word);
     }
+
     result
 }
 
-
-
-
-
-fn process_command(input: &str, builtin_commands: &[&str], directories: &[String]) {
-    let processed_input = process_input(input);
-    let args: Vec<&str> = processed_input.iter().map(|x| x.as_str()).collect();
-    if args.is_empty() {
-        return;
-    }
-    if builtin_commands.contains(&args[0])
-    {
-        match args[0] {
-            "echo" => handle_echo(&args),
-            "pwd" => println!("{}",env::current_dir().unwrap().display()),
-            "type" => handle_type(&args, builtin_commands, directories),
-            "cd" => handle_cd(args[1]),
-            "cat" => {
-                //println!("args: {:?}", args);
-                let mut contents = String::new();
-                for i in 1..args.len() {
-                    let mut content = String::new();
-                    let mut file = std::fs::File::open(args[i]).unwrap();
-                    file.read_to_string(&mut content).unwrap();
-                    contents.push_str(&content);
-                }
-                println!("{}", contents.replace("\n", ""));
-            },
-            _ => println!("{}: command not found", input.trim()),
-        }
-    }
-    else if find_command_in_path(args[0], directories).is_some() {
-        Command::new(args[0]).args(&args[1..]).status().expect("failed to execute process");
-    }
-    else {
-        println!("{}: command not found", input.trim())
-    }
-}
-
-fn handle_echo(args: &[&str]) {
-    //println!("args: {:?}", args);
+fn handle_echo(args: &[String]) {
     if args.len() > 1 {
-        let parsed_input = args[1..].iter().map(|x| x.replace("\n", "")).collect::<Vec<_>>();
-        println!("{}", parsed_input.join(" "));
+        let output = args[1..].join(" ");
+        println!("{}", output);
     }
 }
 
-fn handle_cd(path:&str)
-{
-    if path.eq("~")
-    {
-        let home_dir = env::var("HOME").unwrap();
-        env::set_current_dir(home_dir).unwrap();
-    }
-    else if Path::new(path).exists()
-    {
-        env::set_current_dir(path).unwrap();
-    }
-    else {
-        println!("cd: {}: No such file or directory",path);
+fn handle_pwd() {
+    if let Ok(current_dir) = env::current_dir() {
+        println!("{}", current_dir.display());
+    } else {
+        eprintln!("pwd: error retrieving current directory");
     }
 }
 
-fn handle_type(args: &[&str], builtin_commands: &[&str], directories: &[String]) {
+fn handle_cd(args: &[String]) {
     if args.len() < 2 {
-        println!("type: missing operand");
+        eprintln!("cd: missing argument");
         return;
     }
-    
-    let command = args[1];
-    if builtin_commands.contains(&command) && command != "cat"{
+
+    let target_path = if args[1] == "~" {
+        env::var("HOME").unwrap_or_else(|_| String::new())
+    } else {
+        args[1].to_string()
+    };
+
+    if Path::new(&target_path).exists() {
+        if let Err(err) = env::set_current_dir(&target_path) {
+            eprintln!("cd: {}: {}", target_path, err);
+        }
+    } else {
+        eprintln!("cd: {}: No such file or directory", target_path);
+    }
+}
+
+fn handle_type(args: &[String], directories: &[String]) {
+    if args.len() < 2 {
+        eprintln!("type: missing operand");
+        return;
+    }
+
+    let command = &args[1];
+    if BUILTIN_COMMANDS.contains(&command.as_str()) && command != "cat" {
         println!("{} is a shell builtin", command);
     } else if let Some(path) = find_command_in_path(command, directories) {
-        println!("{} is {}", command, path);
+        println!("{} is {}", command, path.display());
     } else {
-        println!("{}: not found", command);
+        eprintln!("{}: not found", command);
     }
 }
 
-fn find_command_in_path(command: &str, directories: &[String]) -> Option<String> {
-    for dir in directories {
-        let path = format!("{}/{}", dir, command);
-        if Path::new(&path).exists() {
-            return Some(path);
+fn handle_cat(args: &[String]) {
+    if args.len() < 2 {
+        eprintln!("cat: missing file operand");
+        return;
+    }
+
+    for file_path in &args[1..] {
+        let mut file = match File::open(file_path) {
+            Ok(file) => file,
+            Err(_) => {
+                eprintln!("cat: {}: No such file", file_path);
+                continue;
+            }
+        };
+
+        let mut contents = String::new();
+        if file.read_to_string(&mut contents).is_ok() {
+            print!("{}", contents);
+        } else {
+            eprintln!("cat: error reading {}", file_path);
         }
     }
-    None
+}
+
+fn find_command_in_path(command: &str, directories: &[String]) -> Option<PathBuf> {
+    directories.iter().find_map(|dir| {
+        let path = Path::new(dir).join(command);
+        if path.exists() {
+            Some(path)
+        } else {
+            None
+        }
+    })
+}
+
+fn execute_external_command(args: &[String], directories: &[String]) {
+    if let Some(command_path) = find_command_in_path(&args[0], directories) {
+        let status = Command::new(command_path)
+            .args(&args[1..])
+            .status();
+
+        if let Err(err) = status {
+            eprintln!("{}: failed to execute: {}", args[0], err);
+        }
+    } else {
+        eprintln!("{}: command not found", args[0]);
+    }
 }

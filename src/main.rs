@@ -78,7 +78,7 @@ fn parse_input(input: &str) -> Vec<String> {
             '\\' if (!in_single_quotes && !in_double_quotes) || in_double_quotes => {
                 if let Some(next_char) = chars.next() {
                     if in_double_quotes {
-                        word.push('/');
+                        //word.push('/');
                     }
                     word.push(next_char);
                 }

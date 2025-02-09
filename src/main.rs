@@ -75,16 +75,13 @@ fn parse_input(input: &str) -> Vec<String> {
                     word.clear();
                 }
             }
-            '\\' if !in_single_quotes && !in_double_quotes => {
+            '\\' if (!in_single_quotes && !in_double_quotes) || in_double_quotes => {
                 if let Some(next_char) = chars.next() {
+                    if in_double_quotes {
+                        word.push('/');
+                    }
                     word.push(next_char);
                 }
-            }
-            _ if in_double_quotes => {
-                if let Some(next_char) = chars.next() {
-                    word.push('/');
-                    word.push(next_char);
-                } 
             }
            _ => word.push(c),
         }

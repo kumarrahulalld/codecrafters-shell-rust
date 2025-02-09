@@ -64,35 +64,61 @@ fn parse_input(input: &str) -> Vec<String> {
     let mut in_double_quotes = false;
 
     let mut chars = input.chars().peekable();
+
     while let Some(c) = chars.next() {
         match c {
+            // Skip newlines
             '\n' => continue,
-            '\'' if !in_double_quotes => in_single_quotes = !in_single_quotes,
-            '"' if !in_single_quotes => in_double_quotes = !in_double_quotes,
+
+            // Toggle single quotes when outside of double quotes
+            '\'' if !in_double_quotes => {
+                in_single_quotes = !in_single_quotes;
+            }
+
+            // Toggle double quotes when outside of single quotes
+            '"' if !in_single_quotes => {
+                in_double_quotes = !in_double_quotes;
+            }
+
+            // Handle space only when we're not inside any quotes
             ' ' if !in_single_quotes && !in_double_quotes => {
                 if !word.is_empty() {
                     result.push(word.clone());
                     word.clear();
                 }
             }
-            '\\' if (!in_single_quotes && !in_double_quotes) || in_double_quotes => {
+
+            // Handle backslash escaping characters
+            '\\' if in_double_quotes => {
+                // Inside double quotes, preserve escape sequences
                 if let Some(next_char) = chars.next() {
-                    if in_double_quotes {
-                        //word.push('/');
+                    match next_char {
+                        '"' => word.push('"'),  // Escape double quote
+                        '\\' => word.push('\\'), // Escape backslash
+                        _ => word.push(next_char), // Preserve other characters
                     }
+                }
+            }
+            '\\' if !in_single_quotes && !in_double_quotes => {
+                // Outside quotes, treat it as an escape for the next character
+                if let Some(next_char) = chars.next() {
                     word.push(next_char);
                 }
             }
-           _ => word.push(c),
+
+            // Otherwise, just add the current character to the word
+            _ => word.push(c),
         }
     }
 
+    // Add the last word if it's not empty
     if !word.is_empty() {
         result.push(word);
     }
 
     result
 }
+
 
 fn handle_echo(args: &[String]) {
     if args.len() > 1 {

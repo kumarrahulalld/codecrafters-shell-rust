@@ -100,9 +100,33 @@ fn parse_input(input: &str) -> Vec<String> {
                 }
             }
             '\\' if !in_single_quotes && !in_double_quotes => {
-                // Outside quotes, treat it as an escape for the next character
+                // Outside quotes, handle escape sequence (e.g., \50)
                 if let Some(next_char) = chars.next() {
-                    word.push(next_char);
+                    if next_char.is_digit(10) {
+                        // It's a number, treat as an octal escape (e.g., \50 is octal for 8)
+                        let mut escape_sequence = next_char.to_string();
+                        let mut count = 0;
+
+                        // Capture more digits for octal escape sequence
+                        while let Some(&digit) = chars.peek() {
+                            if digit.is_digit(10) {
+                                escape_sequence.push(digit);
+                                chars.next(); // consume the digit
+                                count += 1;
+                            } else {
+                                break;
+                            }
+                        }
+
+                        if !escape_sequence.is_empty() {
+                            // Parse the escape sequence as an octal value
+                            if let Ok(value) = u8::from_str_radix(&escape_sequence, 8) {
+                                word.push(value as char);
+                            }
+                        }
+                    } else {
+                        word.push(next_char); // Just push the character as is
+                    }
                 }
             }
 
@@ -118,6 +142,7 @@ fn parse_input(input: &str) -> Vec<String> {
 
     result
 }
+
 
 
 fn handle_echo(args: &[String]) {

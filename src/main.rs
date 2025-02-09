@@ -80,7 +80,13 @@ fn parse_input(input: &str) -> Vec<String> {
                     word.push(next_char);
                 }
             }
-            _ => word.push(c),
+            _ if in_double_quotes => {
+                if let Some(next_char) = chars.next() {
+                    word.push('/');
+                    word.push(next_char);
+                } 
+            }
+           _ => word.push(c),
         }
     }
 

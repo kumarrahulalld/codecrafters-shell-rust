@@ -3,7 +3,6 @@ use std::fs::File;
 use std::io::{self, Write, Read};
 use std::path::{Path, PathBuf};
 use std::process::Command;
-//comment
 const BUILTIN_COMMANDS: [&str; 6] = ["echo", "type", "exit", "pwd", "cd", "cat"];
 
 fn main() {

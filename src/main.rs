@@ -40,7 +40,7 @@ fn get_user_input() -> String {
 }
 
 fn process_command(input: &str, directories: &[String]) {
-    let args = parse_input(input);
+    let args = escape_quotes(input);
 
     if args.is_empty() {
         return;
@@ -57,90 +57,40 @@ fn process_command(input: &str, directories: &[String]) {
     }
 }
 
-fn parse_input(input: &str) -> Vec<String> {
-    let mut result = Vec::new();
-    let mut word = String::new();
-    let mut in_single_quotes = false;
-    let mut in_double_quotes = false;
-
-    let mut chars = input.chars().peekable();
-
-    while let Some(c) = chars.next() {
-        match c {
-            // Skip newlines
-            '\n' => continue,
-
-            // Toggle single quotes when outside of double quotes
-            '\'' if !in_double_quotes => {
-                in_single_quotes = !in_single_quotes;
-            }
-
-            // Toggle double quotes when outside of single quotes
-            '"' if !in_single_quotes => {
-                in_double_quotes = !in_double_quotes;
-            }
-
-            // Handle space only when we're not inside any quotes
-            ' ' if !in_single_quotes && !in_double_quotes => {
-                if !word.is_empty() {
-                    result.push(word.clone());
-                    word.clear();
+fn escape_quotes(s: &str) -> Vec<String> {
+    let mut s_iter = s.trim().chars().peekable();
+    let mut cur_s = String::new();
+    let mut ret = Vec::new();
+    let mut in_single_quote = false;
+    let mut in_double_quote = false;
+    while let Some(c) = s_iter.next() {
+        if c == '\'' && !in_double_quote {
+            in_single_quote = !in_single_quote;
+        } else if c == '"' && !in_single_quote {
+            in_double_quote = !in_double_quote;
+        } else if c == '\\' && !in_single_quote && !in_double_quote {
+            let c = s_iter.next().unwrap();
+            cur_s.push(c);
+        } else if c == '\\' && in_double_quote {
+            match s_iter.peek().unwrap() {
+                '\\' | '$' | '"' => {
+                    cur_s.push(s_iter.next().unwrap());
                 }
+                _ => cur_s.push(c),
+            };
+        } else if c == ' ' && !in_single_quote && !in_double_quote {
+            if !cur_s.is_empty() {
+                ret.push(cur_s);
+                cur_s = String::new();
             }
-
-            // Handle backslash escaping characters
-            '\\' if in_double_quotes => {
-                // Inside double quotes, preserve escape sequences
-                if let Some(next_char) = chars.next() {
-                    match next_char {
-                        '"' => word.push('"'),  // Escape double quote
-                        '\\' => word.push('\\'), // Escape backslash
-                        _ => word.push(next_char), // Preserve other characters
-                    }
-                }
-            }
-            '\\' if !in_single_quotes && !in_double_quotes => {
-                // Outside quotes, handle escape sequence (e.g., \50)
-                if let Some(next_char) = chars.next() {
-                    if next_char.is_digit(10) {
-                        // It's a number, treat as an octal escape (e.g., \50 is octal for 8)
-                        let mut escape_sequence = next_char.to_string();
-                        let mut count = 0;
-
-                        // Capture more digits for octal escape sequence
-                        while let Some(&digit) = chars.peek() {
-                            if digit.is_digit(10) {
-                                escape_sequence.push(digit);
-                                chars.next(); // consume the digit
-                                count += 1;
-                            } else {
-                                break;
-                            }
-                        }
-
-                        if !escape_sequence.is_empty() {
-                            // Parse the escape sequence as an octal value
-                            if let Ok(value) = u8::from_str_radix(&escape_sequence, 8) {
-                                word.push(value as char);
-                            }
-                        }
-                    } else {
-                        word.push(next_char); // Just push the character as is
-                    }
-                }
-            }
-
-            // Otherwise, just add the current character to the word
-            _ => word.push(c),
+        } else {
+            cur_s.push(c);
         }
     }
-
-    // Add the last word if it's not empty
-    if !word.is_empty() {
-        result.push(word);
+    if !cur_s.is_empty() {
+        ret.push(cur_s);
     }
-
-    result
+    ret
 }
 
 

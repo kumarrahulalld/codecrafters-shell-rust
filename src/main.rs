@@ -21,7 +21,7 @@ fn main() {
 
 fn get_system_paths() -> Vec<String> {
     env::var("PATH")
-        .unwrap_or_else(|_| String::new())  // Return empty string if "PATH" is not set
+        .unwrap_or_else(|_| String::new()) 
         .split(':')
         .map(String::from)
         .collect()

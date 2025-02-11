@@ -46,7 +46,7 @@ fn process_command(input: &str, directories: &[String]) {
     }
 
     match args[0].as_str() {
-        "exit" => return,  // Exit the loop in main()
+        "exit" => return, 
         "echo" => handle_echo(&args),
         "pwd" => handle_pwd(),
         "cd" => handle_cd(&args),

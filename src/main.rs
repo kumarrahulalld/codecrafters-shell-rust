@@ -1,13 +1,14 @@
 use std::env;
 use std::fs::File;
-use std::io::{self, Write, Read};
+use std::io::{self, Read, Stderr, Write};
 use std::path::{Path, PathBuf};
 use std::process::Command;
 const BUILTIN_COMMANDS: [&str; 6] = ["echo", "type", "exit", "pwd", "cd", "cat"];
 //comment
 fn main() {
     let system_paths = get_system_paths();
-
+    let Stderr = io::stderr();
+    Stderr.lock().write_all(b"Welcome to the shell\n").unwrap();
     loop {
         print_prompt();
         let input = get_user_input();

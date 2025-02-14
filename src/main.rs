@@ -1,14 +1,13 @@
 use std::env;
 use std::fs::File;
-use std::io::{self, Read, Stderr, Stdout, Write};
+use std::io::{self, Read, Write};
 use std::path::{Path, PathBuf};
 use std::process::Command;
+
 const BUILTIN_COMMANDS: [&str; 6] = ["echo", "type", "exit", "pwd", "cd", "cat"];
-//comment
+
 fn main() {
     let system_paths = get_system_paths();
-    let stderr = io::stderr();
-    let stdout = io::stdout();
     loop {
         print_prompt();
         let input = get_user_input();
@@ -46,14 +45,29 @@ fn process_command(input: &str, directories: &[String]) {
         return;
     }
 
-    match args[0].as_str() {
-        "exit" => return, 
-        "echo" => handle_echo(&args),
-        "pwd" => handle_pwd(),
-        "cd" => handle_cd(&args),
-        "type" => handle_type(&args, directories),
-        "cat" => handle_cat(&args),
-        _ => execute_external_command(&args, directories),
+    // Check for redirection
+    if let Some((command_args, redirect_file)) = handle_redirection(&args) {
+        // Process the command with output redirection
+        match command_args[0].as_str() {
+            "exit" => return,
+            "echo" => handle_echo(&command_args, redirect_file),
+            "pwd" => handle_pwd(redirect_file),
+            "cd" => handle_cd(&command_args),
+            "type" => handle_type(&command_args, directories),
+            "cat" => handle_cat(&command_args, redirect_file),
+            _ => execute_external_command(&command_args, directories, redirect_file),
+        }
+    } else {
+        // No redirection, just process the command normally
+        match args[0].as_str() {
+            "exit" => return,
+            "echo" => handle_echo(&args, None),
+            "pwd" => handle_pwd(None),
+            "cd" => handle_cd(&args),
+            "type" => handle_type(&args, directories),
+            "cat" => handle_cat(&args, None),
+            _ => execute_external_command(&args, directories, None),
+        }
     }
 }
 
@@ -93,18 +107,27 @@ fn escape_quotes(s: &str) -> Vec<String> {
     ret
 }
 
-
-
-fn handle_echo(args: &[String]) {
+fn handle_echo(args: &[String], redirect_file: Option<String>) {
     if args.len() > 1 {
         let output = args[1..].join(" ");
-        println!("{}", output);
+        if let Some(file) = redirect_file {
+            let mut file = File::create(file).unwrap();
+            writeln!(file, "{}", output).unwrap();
+        } else {
+            println!("{}", output);
+        }
     }
 }
 
-fn handle_pwd() {
+fn handle_pwd(redirect_file: Option<String>) {
     if let Ok(current_dir) = env::current_dir() {
-        println!("{}", current_dir.display());
+        let output = current_dir.display().to_string();
+        if let Some(file) = redirect_file {
+            let mut file = File::create(file).unwrap();
+            writeln!(file, "{}", output).unwrap();
+        } else {
+            println!("{}", output);
+        }
     } else {
         eprintln!("pwd: error retrieving current directory");
     }
@@ -147,7 +170,7 @@ fn handle_type(args: &[String], directories: &[String]) {
     }
 }
 
-fn handle_cat(args: &[String]) {
+fn handle_cat(args: &[String], redirect_file: Option<String>) {
     if args.len() < 2 {
         eprintln!("cat: missing file operand");
         return;
@@ -164,7 +187,12 @@ fn handle_cat(args: &[String]) {
 
         let mut contents = String::new();
         if file.read_to_string(&mut contents).is_ok() {
-            print!("{}", contents);
+            if let Some(file) = redirect_file {
+                let mut output_file = File::create(file).unwrap();
+                write!(output_file, "{}", contents).unwrap();
+            } else {
+                print!("{}", contents);
+            }
         } else {
             eprintln!("cat: error reading {}", file_path);
         }
@@ -182,16 +210,39 @@ fn find_command_in_path(command: &str, directories: &[String]) -> Option<PathBuf
     })
 }
 
-fn execute_external_command(args: &[String], directories: &[String]) {
+fn execute_external_command(args: &[String], directories: &[String], redirect_file: Option<String>) {
     if let Some(command_path) = find_command_in_path(&args[0], directories) {
-        let status = Command::new(command_path.file_name().unwrap())
+        let output = Command::new(command_path.file_name().unwrap())
             .args(&args[1..])
-            .status();
+            .output();
 
-        if let Err(err) = status {
-            eprintln!("{}: failed to execute: {}", args[0], err);
+        match output {
+            Ok(output) => {
+                let result = String::from_utf8_lossy(&output.stdout);
+                if let Some(file) = redirect_file {
+                    let mut file = File::create(file).unwrap();
+                    writeln!(file, "{}", result).unwrap();
+                } else {
+                    print!("{}", result);
+                }
+            }
+            Err(err) => eprintln!("{}: failed to execute: {}", args[0], err),
         }
     } else {
         eprintln!("{}: command not found", args[0]);
     }
+}
+
+// Function to handle the redirection operator
+fn handle_redirection(args: &[String]) -> Option<(Vec<String>, Option<String>)> {
+    let mut new_args = args.to_vec();
+    if let Some(redirect_index) = args.iter().position(|x| x == ">") {
+        let filename = args.get(redirect_index + 1).cloned();
+        if let Some(filename) = filename {
+            new_args.remove(redirect_index);
+            new_args.remove(redirect_index); // Remove the filename argument
+            return Some((new_args, Some(filename)));
+        }
+    }
+    None
 }

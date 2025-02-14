@@ -45,7 +45,7 @@ fn process_command(input: &str, directories: &[String]) {
         return;
     }
 
-    // Check for redirectio
+    // Check for redirection
     if let Some((command_args, redirect_file)) = handle_redirection(&args) {
         // Process the command with output redirection
         match command_args[0].as_str() {

@@ -110,11 +110,12 @@ fn escape_quotes(s: &str) -> Vec<String> {
 fn handle_echo(args: &[String], redirect_file: Option<String>) {
     if args.len() > 1 {
         let output = args[1..].join(" ");
+        println!("{}",args[1..]);
         if let Some(file) = redirect_file {
             let mut file = File::create(file).unwrap();
             writeln!(file, "{}", output).unwrap();
         } else {
-            println!("{}", output.replace("\n", ""));
+            println!("{}", output);
         }
     }
 }

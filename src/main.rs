@@ -110,7 +110,6 @@ fn escape_quotes(s: &str) -> Vec<String> {
 fn handle_echo(args: &[String], redirect_file: Option<String>) {
     if args.len() > 1 {
         let output = args[1..].join(" ");
-        println!(" args {:?}", &args[1..].to_vec());
         if let Some(file) = redirect_file {
             let mut file = File::create(file).unwrap();
             writeln!(file, "{}", output).unwrap();
@@ -190,7 +189,7 @@ fn handle_cat(args: &[String], redirect_file: Option<String>) {
         if file.read_to_string(&mut contents).is_ok() {
             if let Some(ref file) = redirect_file {
                 let mut output_file = File::create(file).unwrap();
-                write!(output_file, "{}", contents).unwrap();
+                write!(output_file, "{}", contents.replace("\n", "")).unwrap();
             } else {
                 print!("{}", contents);
             }

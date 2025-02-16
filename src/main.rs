@@ -237,7 +237,7 @@ fn handle_redirection(args: &[String]) -> Option<(Vec<String>, Option<String>)> 
         let filename = args.get(redirect_index + 1).cloned();
         if let Some(filename) = filename {
             new_args.remove(redirect_index);
-            new_args.remove(redirect_index); // Remove the filename argument
+            new_args.remove(redirect_index);
             return Some((new_args, Some(filename)));
         }
     }

@@ -5,6 +5,7 @@ use std::path::{Path, PathBuf};
 use std::process::Command;
 
 const BUILTIN_COMMANDS: [&str; 6] = ["echo", "type", "exit", "pwd", "cd", "cat"];
+
 fn main() {
     let system_paths = get_system_paths();
     loop {
@@ -28,7 +29,7 @@ fn get_system_paths() -> Vec<String> {
 
 fn print_prompt() {
     print!("$ ");
-    io::stdout().flush().unwrap();
+    io::stdout().flush().unwrap();  // Ensure prompt is flushed and no extra newlines are printed
 }
 
 fn get_user_input() -> String {
@@ -105,12 +106,18 @@ fn escape_quotes(s: &str) -> Vec<String> {
 
 fn handle_echo(args: &[String], redirect_file: Option<String>) {
     if args.len() > 1 {
-        let output = args[1..].join(" ");
+        let mut output = args[1..].join(" ");
+        
+        // Check for `-n` flag to suppress newline
+        if args[1] == "-n" {
+            output = args[2..].join(" ");  // Remove newline when -n is used
+        }
+
         if let Some(file) = redirect_file {
             let mut file = File::create(file).unwrap();
-            writeln!(file, "{}", output).unwrap();
+            write!(file, "{}", output).unwrap();
         } else {
-            println!("{}", output);
+            print!("{}", output);  // Output without newline
         }
     }
 }
@@ -122,7 +129,7 @@ fn handle_pwd(redirect_file: Option<String>) {
             let mut file = File::create(file).unwrap();
             writeln!(file, "{}", output).unwrap();
         } else {
-            println!("{}", output);
+            print!("{}", output);  // Print without a newline
         }
     } else {
         eprintln!("pwd: error retrieving current directory");
@@ -185,9 +192,9 @@ fn handle_cat(args: &[String], redirect_file: Option<String>) {
         if file.read_to_string(&mut contents).is_ok() {
             if let Some(ref file) = redirect_file {
                 let mut output_file = File::create(file).unwrap();
-                write!(output_file, "{}", contents.replace("\n", "")).unwrap();
+                write!(output_file, "{}", contents).unwrap();
             } else {
-                print!("{}", contents);
+                print!("{}", contents);  // Output file contents without newline
             }
         } else {
             eprintln!("cat: error reading {}", file_path);
@@ -219,7 +226,7 @@ fn execute_external_command(args: &[String], directories: &[String], redirect_fi
                     let mut file = File::create(file).unwrap();
                     writeln!(file, "{}", result).unwrap();
                 } else {
-                    print!("{}", result);
+                    print!("{}", result);  // Output without extra newline
                 }
             }
             Err(err) => eprintln!("{}: failed to execute: {}", args[0], err),

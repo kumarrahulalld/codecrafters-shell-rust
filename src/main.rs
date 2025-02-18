@@ -29,7 +29,7 @@ fn get_system_paths() -> Vec<String> {
 
 fn print_prompt() {
     print!("$ ");
-    io::stdout().flush().unwrap();  // Ensure prompt is flushed and no extra newlines are printed
+    io::stdout().flush().unwrap();  // Ensure the prompt is printed without extra newline
 }
 
 fn get_user_input() -> String {
@@ -117,7 +117,7 @@ fn handle_echo(args: &[String], redirect_file: Option<String>) {
             let mut file = File::create(file).unwrap();
             write!(file, "{}", output).unwrap();
         } else {
-            print!("{}", output);  // Output without newline
+            print!("{}", output);  // Output without a newline
         }
     }
 }

@@ -29,7 +29,7 @@ fn get_system_paths() -> Vec<String> {
 
 fn print_prompt() {
     print!("$ ");
-    io::stdout().flush().unwrap();  // Ensure the prompt is printed without extra newline
+    io::stdout().flush().unwrap();  // Ensure the prompt is printed immediately without extra newline
 }
 
 fn get_user_input() -> String {
@@ -45,6 +45,7 @@ fn process_command(input: &str, directories: &[String]) {
         return;
     }
 
+    // Process the command and handle redirection
     if let Some((command_args, redirect_file)) = handle_redirection(&args) {
         match command_args[0].as_str() {
             "exit" => return,
@@ -56,6 +57,7 @@ fn process_command(input: &str, directories: &[String]) {
             _ => execute_external_command(&command_args, directories, redirect_file),
         }
     } else {
+        // No redirection, just process the command normally
         match args[0].as_str() {
             "exit" => return,
             "echo" => handle_echo(&args, None),
@@ -66,6 +68,9 @@ fn process_command(input: &str, directories: &[String]) {
             _ => execute_external_command(&args, directories, None),
         }
     }
+
+    // Ensure prompt is printed again after command execution
+    print_prompt();  // Print the prompt without a newline
 }
 
 fn escape_quotes(s: &str) -> Vec<String> {

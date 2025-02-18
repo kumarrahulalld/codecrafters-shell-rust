@@ -69,8 +69,7 @@ fn process_command(input: &str, directories: &[String]) {
         }
     }
 
-    // Ensure prompt is printed again after command execution
-    print_prompt();  // Print the prompt without a newline
+    // Ensure prompt is printed again after command execution (only once)
 }
 
 fn escape_quotes(s: &str) -> Vec<String> {

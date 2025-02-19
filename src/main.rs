@@ -247,7 +247,8 @@ fn execute_external_command(args: &[String], directories: &[String], redirect_fi
 // Function to handle the redirection operator
 fn handle_redirection(args: &[String]) -> Option<(Vec<String>, Option<String>)> {
     let mut new_args = args.to_vec();
-    if let Some(redirect_index) = args.iter().position(|x| x == ">") {
+    // i want to hndle 1> as well
+    if let Some(redirect_index) = args.iter().position(|x| x == ">" || x=="1>") {
         let filename = args.get(redirect_index + 1).cloned();
         if let Some(filename) = filename {
             new_args.remove(redirect_index);

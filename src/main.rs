@@ -198,7 +198,7 @@ fn handle_cat(args: &[String], redirect_file: Option<String>) {
                 let mut output_file = File::create(file).unwrap();
                 write!(output_file, "{}", contents).unwrap();
             } else {
-                print!("{}", contents);  // Output file contents without newline
+                print!("{}", contents.replace('\n', ""));  // Output file contents without newline
             }
         } else {
             eprintln!("cat: error reading {}", file_path);

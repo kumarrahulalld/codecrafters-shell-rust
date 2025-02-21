@@ -114,7 +114,7 @@ fn handle_echo(args: &[String], redirect_file: Option<String>) {
         
         // Check for `-n` flag to suppress newline
         if args[1] == "-n" {
-            output = args[2..].join(" ");  // Remove newline when -n is used
+            output = args[2..].join(" "); 
         }
 
         if let Some(file) = redirect_file {

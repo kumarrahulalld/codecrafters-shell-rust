@@ -199,6 +199,7 @@ fn handle_cat(args: &[String], redirect_file: Option<String>) {
             } else {
                 if contents.ends_with("\n\n") {
                     contents.pop();
+                    contents.pop();
                 }
                 println!("{}", contents);
             }

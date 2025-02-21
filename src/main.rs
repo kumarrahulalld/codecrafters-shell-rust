@@ -197,8 +197,8 @@ fn handle_cat(args: &[String], redirect_file: Option<String>) {
                 let mut output_file = File::create(file).unwrap();
                 write!(output_file, "{}", contents).unwrap();
             } else {
-                for c in contents.chars() {
-                    println!("char {} {}", c, c as u8);
+                if contents.ends_with("\n\n") {
+                    contents.pop();
                 }
                 print!("{}", contents);
             }

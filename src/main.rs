@@ -112,7 +112,6 @@ fn handle_echo(args: &[String], redirect_file: Option<String>) {
     if args.len() > 1 {
         let mut output = args[1..].join(" ");
         
-        // Check for `-n` flag to suppress newline
         if args[1] == "-n" {
             output = args[2..].join(" "); 
         }

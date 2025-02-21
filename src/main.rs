@@ -120,7 +120,7 @@ fn handle_echo(args: &[String], redirect_file: Option<String>) {
             let mut file = File::create(file).unwrap();
             write!(file, "{}", output).unwrap();
         } else {
-            print!("{}", output);
+            println!("{}", output);
         }
     }
 }
@@ -200,10 +200,7 @@ fn handle_cat(args: &[String], redirect_file: Option<String>) {
                 if contents.ends_with("\n\n") {
                     contents.pop();
                 }
-                else if !contents.ends_with("\n") {
-                    contents.push('\n');
-                }
-                print!("{}", contents);
+                println!("{}", contents);
             }
         } else {
             eprintln!("cat: error reading {}", file_path);

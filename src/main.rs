@@ -186,7 +186,7 @@ fn handle_cat(args: &[String], redirect_file: Option<String>) {
         let mut file = match File::open(file_path) {
             Ok(file) => file,
             Err(_) => {
-                eprintln!("cat: {}: No such file", file_path);
+                eprintln!("cat: {}: No such file or directory", file_path);
                 continue;
             }
         };

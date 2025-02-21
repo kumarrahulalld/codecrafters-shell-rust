@@ -245,14 +245,18 @@ fn execute_external_command(args: &[String], directories: &[String], redirect_fi
 // Function to handle the redirection operator
 fn handle_redirection(args: &[String]) -> Option<(Vec<String>, Option<String>)> {
     let mut new_args = args.to_vec();
-    // i want to hndle 1> as well
-    if let Some(redirect_index) = args.iter().position(|x| x == ">" || x=="1>") {
-        let filename = args.get(redirect_index + 1).cloned();
+
+    // Check for either ">" or "1>" in the args
+    if let Some(redirect_index) = args.iter().position(|x| x == ">" || x == "1>") {
+        let filename = args.get(redirect_index + 1).cloned(); // Get the filename after the operator
+        
         if let Some(filename) = filename {
-            new_args.remove(redirect_index);
-            new_args.remove(redirect_index);
+            // Remove the redirection operator and filename from the arguments
+            new_args.remove(redirect_index); // Remove the ">" or "1>"
+            new_args.remove(redirect_index); // Remove the filename
             return Some((new_args, Some(filename)));
         }
     }
     None
 }
+

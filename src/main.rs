@@ -198,7 +198,7 @@ fn handle_cat(args: &[String], redirect_file: Option<String>) {
                 write!(output_file, "{}", contents).unwrap();
             } else {
                 for c in contents.chars() {
-                    print!("char {} {}", c, c as u8);
+                    println!("char {} {}", c, c as u8);
                 }
                 print!("{}", contents);
             }

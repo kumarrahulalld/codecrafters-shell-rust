@@ -29,7 +29,7 @@ fn get_system_paths() -> Vec<String> {
 
 fn print_prompt() {
     print!("$ ");
-    io::stdout().flush().unwrap();  // Ensure the prompt is printed immediately without extra newline
+    io::stdout().flush().unwrap();  
 }
 
 fn get_user_input() -> String {

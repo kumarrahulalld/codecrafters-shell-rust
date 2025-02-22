@@ -57,7 +57,6 @@ fn process_command(input: &str, directories: &[String]) {
             _ => execute_external_command(&command_args, directories, redirect_file),
         }
     } else {
-        // No redirection, just process the command normally
         match args[0].as_str() {
             "exit" => return,
             "echo" => handle_echo(&args, None),

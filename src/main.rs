@@ -195,10 +195,6 @@ fn handle_cat(args: &[String], redirect_file: Option<String>) {
                 let mut output_file = File::create(file).unwrap();
                 writeln!(output_file, "{}", contents).unwrap();
             } else {
-                if contents.ends_with("\n\n") {
-                    contents.pop();
-                    contents.pop();
-                }
                 println!("{}", contents);
             }
         } else {

@@ -194,6 +194,13 @@ fn handle_cat(args: &[String], redirect_file: Option<String>) {
             if(contents.ends_with('\n')) {
                 contents.pop();
             }
+            for c in contents.chars() {
+                if c == '\n' {
+                    print!("NewLIne");
+                } else {
+                    print!("{}", c);
+                }
+            }
             if let Some(ref file) = redirect_file {
                 let mut output_file = File::create(file).unwrap();
                 writeln!(output_file, "{}", contents).unwrap();

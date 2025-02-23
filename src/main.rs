@@ -196,9 +196,9 @@ fn handle_cat(args: &[String], redirect_file: Option<String>) {
             }
             for c in contents.chars() {
                 if c == '\n' {
-                    print!("NewLIne");
+                    println!("NewLIne");
                 } else {
-                    print!("{}", c);
+                    println!("{}", c);
                 }
             }
             if let Some(ref file) = redirect_file {

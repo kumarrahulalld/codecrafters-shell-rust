@@ -191,15 +191,10 @@ fn handle_cat(args: &[String], redirect_file: Option<String>) {
 
         let mut contents = String::new();
         if file.read_to_string(&mut contents).is_ok() {
-            if(contents.ends_with('\n')) {
+            
+            while contents.ends_with("\n") {
                 contents.pop();
-            }
-            for c in contents.chars() {
-                if c == '\n' {
-                    println!("NewLIne");
-                } else {
-                    println!("{}", c);
-                }
+                
             }
             if let Some(ref file) = redirect_file {
                 let mut output_file = File::create(file).unwrap();

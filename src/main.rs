@@ -116,7 +116,7 @@ fn handle_echo(args: &[String], redirect_file: Option<String>) {
 
         if let Some(file) = redirect_file {
             let mut file = File::create(file).unwrap();
-            write!(file, "{}", output).unwrap();
+            writeln!(file, "{}", output).unwrap();
         } else {
             println!("{}", output);
         }
@@ -193,7 +193,7 @@ fn handle_cat(args: &[String], redirect_file: Option<String>) {
         if file.read_to_string(&mut contents).is_ok() {
             if let Some(ref file) = redirect_file {
                 let mut output_file = File::create(file).unwrap();
-                write!(output_file, "{}", contents).unwrap();
+                writeln!(output_file, "{}", contents).unwrap();
             } else {
                 if contents.ends_with("\n\n") {
                     contents.pop();

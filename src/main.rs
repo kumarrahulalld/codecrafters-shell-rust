@@ -191,6 +191,9 @@ fn handle_cat(args: &[String], redirect_file: Option<String>) {
 
         let mut contents = String::new();
         if file.read_to_string(&mut contents).is_ok() {
+            if(contents.ends_with('\n')) {
+                contents.pop();
+            }
             if let Some(ref file) = redirect_file {
                 let mut output_file = File::create(file).unwrap();
                 writeln!(output_file, "{}", contents).unwrap();

@@ -179,7 +179,7 @@ fn handle_cat(args: &[String], redirect_file: Option<String>) {
         eprintln!("cat: missing file operand");
         return;
     }
-
+    let mut contents = String::new();
     for file_path in &args[1..] {
         let mut file = match File::open(file_path) {
             Ok(file) => file,
@@ -188,23 +188,23 @@ fn handle_cat(args: &[String], redirect_file: Option<String>) {
                 continue;
             }
         };
-
-        let mut contents = String::new();
-        if file.read_to_string(&mut contents).is_ok() {
+        let mut con = String::new();
+        if file.read_to_string(&mut con).is_ok() {
             
-            while contents.ends_with("\n") {
-                contents.pop();
+            while con.ends_with("\n") {
+                con.pop();
                 
             }
-            if let Some(ref file) = redirect_file {
-                let mut output_file = File::create(file).unwrap();
-                writeln!(output_file, "{}", contents).unwrap();
-            } else {
-                println!("{}", contents);
-            }
+            contents.push_str(&con);
         } else {
             eprintln!("cat: error reading {}", file_path);
         }
+    }
+    if let Some(ref file) = redirect_file {
+        let mut output_file = File::create(file).unwrap();
+        writeln!(output_file, "{}", contents).unwrap();
+    } else {
+        println!("{}", contents);
     }
 }
 

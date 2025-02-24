@@ -116,7 +116,7 @@ fn handle_echo(args: &[String], redirect_file: Option<String>) {
 
         if let Some(file) = redirect_file {
             let mut file = File::create(file).unwrap();
-            writeln!(file, "{}", output).unwrap();
+            write!(file, "{}", output).unwrap();
         } else {
             println!("{}", output);
         }

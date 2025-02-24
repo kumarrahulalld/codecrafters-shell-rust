@@ -130,7 +130,7 @@ fn handle_pwd(redirect_file: Option<String>) {
             let mut file = File::create(file).unwrap();
             writeln!(file, "{}", output).unwrap();
         } else {
-            print!("{}", output); 
+            println!("{}", output); 
         }
     } else {
         eprintln!("pwd: error retrieving current directory");

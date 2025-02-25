@@ -114,9 +114,9 @@ fn handle_echo(args: &[String], stdout_file: Option<String>, stderr_file: Option
 
         if let Some(file) = stdout_file {
             let mut file = File::create(file).unwrap();
-            write!(file, "{}", output).unwrap();
+            writeln!(file, "{}", output).unwrap();
         } else {
-            print!("{}", output); // Output without extra newline
+            println!("{}", output); // Output without extra newline
         }
 
         if let Some(file) = stderr_file {

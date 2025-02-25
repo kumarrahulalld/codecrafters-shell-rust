@@ -45,29 +45,27 @@ fn process_command(input: &str, directories: &[String]) {
         return;
     }
 
-    if let Some((command_args, redirect_file)) = handle_redirection(&args) {
+    if let Some((command_args, stdout_file, stderr_file)) = handle_redirection(&args) {
         match command_args[0].as_str() {
             "exit" => return,
-            "echo" => handle_echo(&command_args, redirect_file),
-            "pwd" => handle_pwd(redirect_file),
+            "echo" => handle_echo(&command_args, stdout_file, stderr_file),
+            "pwd" => handle_pwd(stdout_file, stderr_file),
             "cd" => handle_cd(&command_args),
             "type" => handle_type(&command_args, directories),
-            "cat" => handle_cat(&command_args, redirect_file),
-            _ => execute_external_command(&command_args, directories, redirect_file),
+            "cat" => handle_cat(&command_args, stdout_file, stderr_file),
+            _ => execute_external_command(&command_args, directories, stdout_file, stderr_file),
         }
     } else {
         match args[0].as_str() {
             "exit" => return,
-            "echo" => handle_echo(&args, None),
-            "pwd" => handle_pwd(None),
+            "echo" => handle_echo(&args, None, None),
+            "pwd" => handle_pwd(None, None),
             "cd" => handle_cd(&args),
             "type" => handle_type(&args, directories),
-            "cat" => handle_cat(&args, None),
-            _ => execute_external_command(&args, directories, None),
+            "cat" => handle_cat(&args, None, None),
+            _ => execute_external_command(&args, directories, None, None),
         }
     }
-
-    // Ensure prompt is printed again after command execution (only once)
 }
 
 fn escape_quotes(s: &str) -> Vec<String> {
@@ -106,7 +104,7 @@ fn escape_quotes(s: &str) -> Vec<String> {
     ret
 }
 
-fn handle_echo(args: &[String], redirect_file: Option<String>) {
+fn handle_echo(args: &[String], stdout_file: Option<String>, stderr_file: Option<String>) {
     if args.len() > 1 {
         let mut output = args[1..].join(" ");
         
@@ -114,23 +112,33 @@ fn handle_echo(args: &[String], redirect_file: Option<String>) {
             output = args[2..].join(" "); 
         }
 
-        if let Some(file) = redirect_file {
+        if let Some(file) = stdout_file {
             let mut file = File::create(file).unwrap();
             write!(file, "{}", output).unwrap();
         } else {
-            println!("{}", output);
+            print!("{}", output); // Output without extra newline
+        }
+
+        if let Some(file) = stderr_file {
+            let mut file = File::create(file).unwrap();
+            writeln!(file, "{}", output).unwrap(); // Write to stderr file
         }
     }
 }
 
-fn handle_pwd(redirect_file: Option<String>) {
+fn handle_pwd(stdout_file: Option<String>, stderr_file: Option<String>) {
     if let Ok(current_dir) = env::current_dir() {
         let output = current_dir.display().to_string();
-        if let Some(file) = redirect_file {
+        if let Some(file) = stdout_file {
             let mut file = File::create(file).unwrap();
             writeln!(file, "{}", output).unwrap();
         } else {
             println!("{}", output); 
+        }
+
+        if let Some(file) = stderr_file {
+            let mut file = File::create(file).unwrap();
+            writeln!(file, "{}", output).unwrap(); // Write to stderr file
         }
     } else {
         eprintln!("pwd: error retrieving current directory");
@@ -174,7 +182,7 @@ fn handle_type(args: &[String], directories: &[String]) {
     }
 }
 
-fn handle_cat(args: &[String], redirect_file: Option<String>) {
+fn handle_cat(args: &[String], stdout_file: Option<String>, stderr_file: Option<String>) {
     if args.len() < 2 {
         eprintln!("cat: missing file operand");
         return;
@@ -190,21 +198,24 @@ fn handle_cat(args: &[String], redirect_file: Option<String>) {
         };
         let mut con = String::new();
         if file.read_to_string(&mut con).is_ok() {
-            
             while con.ends_with("\n") {
                 con.pop();
-                
             }
             contents.push_str(&con);
         } else {
             eprintln!("cat: error reading {}", file_path);
         }
     }
-    if let Some(ref file) = redirect_file {
+    if let Some(ref file) = stdout_file {
         let mut output_file = File::create(file).unwrap();
         writeln!(output_file, "{}", contents).unwrap();
     } else {
         println!("{}", contents);
+    }
+
+    if let Some(ref file) = stderr_file {
+        let mut output_file = File::create(file).unwrap();
+        writeln!(output_file, "{}", contents).unwrap(); // Write to stderr file
     }
 }
 
@@ -219,7 +230,7 @@ fn find_command_in_path(command: &str, directories: &[String]) -> Option<PathBuf
     })
 }
 
-fn execute_external_command(args: &[String], directories: &[String], redirect_file: Option<String>) {
+fn execute_external_command(args: &[String], directories: &[String], stdout_file: Option<String>, stderr_file: Option<String>) {
     if let Some(command_path) = find_command_in_path(&args[0], directories) {
         let output = Command::new(command_path.file_name().unwrap())
             .args(&args[1..])
@@ -228,11 +239,19 @@ fn execute_external_command(args: &[String], directories: &[String], redirect_fi
         match output {
             Ok(output) => {
                 let result = String::from_utf8_lossy(&output.stdout);
-                if let Some(file) = redirect_file {
+                if let Some(file) = stdout_file {
                     let mut file = File::create(file).unwrap();
                     writeln!(file, "{}", result).unwrap();
                 } else {
-                    print!("{}", result);  // Output without extra newline
+                    print!("{}", result);  // Output to stdout without extra newline
+                }
+
+                let err_result = String::from_utf8_lossy(&output.stderr);
+                if let Some(file) = stderr_file {
+                    let mut file = File::create(file).unwrap();
+                    writeln!(file, "{}", err_result).unwrap(); // Write to stderr file
+                } else {
+                    eprint!("{}", err_result);  // Output to stderr without extra newline
                 }
             }
             Err(err) => eprintln!("{}: failed to execute: {}", args[0], err),
@@ -243,10 +262,12 @@ fn execute_external_command(args: &[String], directories: &[String], redirect_fi
 }
 
 // Function to handle the redirection operator
-fn handle_redirection(args: &[String]) -> Option<(Vec<String>, Option<String>)> {
+fn handle_redirection(args: &[String]) -> Option<(Vec<String>, Option<String>, Option<String>)> {
     let mut new_args = args.to_vec();
+    let mut stderr_file = None;
+    let mut stdout_file = None;
 
-    // Check for either ">" or "1>" in the args
+    // Check for either ">" or "1>" in the args (stdout redirection)
     if let Some(redirect_index) = args.iter().position(|x| x == ">" || x == "1>") {
         let filename = args.get(redirect_index + 1).cloned(); // Get the filename after the operator
         
@@ -254,9 +275,22 @@ fn handle_redirection(args: &[String]) -> Option<(Vec<String>, Option<String>)> 
             // Remove the redirection operator and filename from the arguments
             new_args.remove(redirect_index); // Remove the ">" or "1>"
             new_args.remove(redirect_index); // Remove the filename
-            return Some((new_args, Some(filename)));
+            stdout_file = Some(filename);
         }
     }
-    None
-}
 
+    // Check for "2>" in the args (stderr redirection)
+    if let Some(redirect_index) = args.iter().position(|x| x == "2>") {
+        let filename = args.get(redirect_index + 1).cloned(); // Get the filename after the operator
+        
+        if let Some(filename) = filename {
+            // Remove the redirection operator and filename from the arguments
+            new_args.remove(redirect_index); // Remove the "2>"
+            new_args.remove(redirect_index); // Remove the filename
+            stderr_file = Some(filename);
+        }
+    }
+
+    // Return modified arguments along with the redirection targets (stdout and stderr)
+    Some((new_args, stdout_file, stderr_file))
+}

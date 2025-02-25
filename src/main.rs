@@ -115,13 +115,13 @@ fn handle_echo(args: &[String], stdout_file: Option<String>, stderr_file: Option
         if let Some(file) = stdout_file {
             let mut file = File::create(file).unwrap();
             writeln!(file, "{}", output).unwrap();
-        } else {
-            println!("{}", output); // Output without extra newline
         }
-
-        if let Some(file) = stderr_file {
+        else if let Some(file) = stderr_file {
             let mut file = File::create(file).unwrap();
             writeln!(file, "{}", output).unwrap(); // Write to stderr file
+        }
+         else {
+            println!("{}", output); // Output without extra newline
         }
     }
 }

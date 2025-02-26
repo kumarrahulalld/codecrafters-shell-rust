@@ -279,7 +279,7 @@ fn execute_external_command(args: &[String], directories: &[String], stdout_file
                 let err_result = String::from_utf8_lossy(&output.stderr);
                 if let Some(file) = stderr_file {
                     let mut file = File::create(file).unwrap();
-                    writeln!(file, "{}", err_result).unwrap(); // Write to stderr file
+                    writeln!(file, "{}", err_result).unwrap();
                 } else {
                     eprintln!("{}", err_result); // Output to stderr
                 }

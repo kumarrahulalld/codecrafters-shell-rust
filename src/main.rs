@@ -274,7 +274,7 @@ fn execute_external_command(args: &[String], directories: &[String], stdout_file
                     let mut file = File::create(file).unwrap();
                     writeln!(file, "{}", result).unwrap();
                 } else {
-                    print!("{}", result); // Output without extra newline
+                    println!("{}", result); // Output without extra newline
                 }
                 let err_result = String::from_utf8_lossy(&output.stderr);
                 if let Some(file) = stderr_file {
